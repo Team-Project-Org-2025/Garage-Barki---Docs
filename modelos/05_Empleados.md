@@ -174,6 +174,7 @@ LIMIT 20
 ```
 
 **Parámetros:**
+
 | Nombre   | Tipo   | Descripción                         |
 | -------- | ------ | ----------------------------------- |
 | `$query` | string | Texto parcial a buscar en el nombre |

@@ -22,15 +22,15 @@ Permite obtener registros, registrar pagos, anular abonos, actualizar estados de
 ---
 
 ## 🧾 Campos principales
-| Campo | Tipo | Descripción |
-|--------|------|-------------|
-| cuenta_pagar_id | INT | Identificador único de la cuenta. |
-| compra_id | INT | ID de la compra asociada. |
-| proveedor_rif | VARCHAR | RIF del proveedor asociado. |
-| monto | DECIMAL | Monto total de la cuenta por pagar. |
-| fecha_vencimiento | DATE | Fecha límite de pago. |
-| estado | ENUM('pendiente', 'vencido', 'pagado') | Estado actual de la cuenta. |
-| fec_actualizacion | TIMESTAMP | Última modificación registrada. |
+| Campo             | Tipo                                   | Descripción                         |
+| ----------------- | -------------------------------------- | ----------------------------------- |
+| cuenta_pagar_id   | INT                                    | Identificador único de la cuenta.   |
+| compra_id         | INT                                    | ID de la compra asociada.           |
+| proveedor_rif     | VARCHAR                                | RIF del proveedor asociado.         |
+| monto             | DECIMAL                                | Monto total de la cuenta por pagar. |
+| fecha_vencimiento | DATE                                   | Fecha límite de pago.               |
+| estado            | ENUM('pendiente', 'vencido', 'pagado') | Estado actual de la cuenta.         |
+| fec_actualizacion | TIMESTAMP                              | Última modificación registrada.     |
 
 ---
 
@@ -129,7 +129,7 @@ Obtiene métricas generales del módulo de cuentas por pagar.
 **Retorna:**  
 `array` con los siguientes campos:
 | Campo | Descripción |
-|--------|-------------|
+| -------- | ------------- |
 | total_cuentas | Total de cuentas registradas. |
 | deuda_original | Suma total de los montos iniciales. |
 | deuda_pendiente | Suma total del saldo aún no pagado. |

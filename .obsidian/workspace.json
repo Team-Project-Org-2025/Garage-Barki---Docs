@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "modelos/10_Usuario.md",
-                "mode": "source",
+                "file": "modelos/02_Cuentas_por_Cobrar.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "10_Usuario"
+              "title": "02_Cuentas_por_Cobrar"
             }
           }
         ]
@@ -168,19 +168,19 @@
       "iconic:Abrir libro de reglas": false
     }
   },
-  "active": "78942d23834bb15c",
+  "active": "a1d3866bf86e0268",
   "lastOpenFiles": [
+    "modelos/01_Cuentas_por_Pagar.md",
+    "modelos/02_Cuentas_por_Cobrar.md",
+    "modelos/05_Empleados.md",
+    "modelos/03_Clientes.md",
+    "modelos/04_Dashboard.md",
+    "modelos/10_Usuario.md",
     "controladores",
     "modelos/09_Proveedores.md",
-    "modelos/10_Usuario.md",
     "modelos/07_Compras.md",
     "modelos/06_Productos.md",
     "modelos/07_Compras",
-    "modelos/05_Empleados.md",
-    "modelos/04_Dashboard.md",
-    "modelos/03_Clientes.md",
-    "modelos/01_Cuentas_por_Pagar.md",
-    "modelos/02_Cuentas_por_Cobrar.md",
     "modelos/Cuentas por pagar.md",
     "modelos/Sin título.canvas",
     "modelos",

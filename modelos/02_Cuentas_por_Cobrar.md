@@ -8,147 +8,159 @@
 
 ## 📘 Descripción general
 
-El modelo **AccountsReceivable** gestiona toda la lógica relacionada con las **cuentas por cobrar** del sistema.  
-Su objetivo es controlar los créditos otorgados a clientes, registrar pagos, manejar vencimientos y actualizar los estados de las ventas relacionadas.
+El modelo **AccountsReceivable** centraliza toda la gestión de las **cuentas por cobrar** del sistema.  
+Su función principal es administrar créditos, registrar pagos, controlar vencimientos y sincronizar automáticamente los estados de las ventas asociadas.
 
-Incluye consultas avanzadas, validaciones de negocio y control de transacciones SQL para garantizar la integridad de los datos.
+Implementa control transaccional, validaciones de negocio y métodos reutilizables para optimizar el manejo de datos relacionados con los créditos y pagos.
 
 ---
 
 ## 📂 Dependencias
 
-- **PDO** → Manejo de base de datos.
-- **Exception** → Manejo de errores.
-- **Barkios\core\Database** → Clase base de conexión y gestión de consultas.
+- **PDO** → Ejecución y manipulación de consultas SQL.
+    
+- **Exception** → Captura y manejo de errores en las operaciones.
+    
+- **Barkios\core\Database** → Clase base que gestiona la conexión y los métodos de base de datos.
+    
 
 ---
 
-## ⚙️ Métodos Principales
+## ⚙️ Métodos principales
 
 ### 🔹 `getAll()`
-Obtiene todas las cuentas por cobrar activas (no eliminadas ni anuladas).
+
+Obtiene todas las **cuentas por cobrar activas**, excluyendo las eliminadas o anuladas.
 
 **Retorna:**  
-`array` — Lista de cuentas con datos de cliente, venta y crédito asociados.
-
-**Características:**
-- Calcula días restantes (`DATEDIFF`).
-- Determina el estado visual: `Pagado`, `Vencido`, `Por vencer`, `Vigente`.
-- Ordena por fecha de vencimiento.
-
----
-
-### 🔹 `getById($cuentaId)`
-Obtiene los datos completos de una cuenta específica.
-
-**Parámetros:**
-- `$cuentaId` *(int)* — ID de la cuenta por cobrar.
+`array` — Lista de cuentas con información combinada del cliente, venta y crédito.
 
 **Incluye:**
-- Detalles de venta, cliente, empleado y crédito.
+
+- Días restantes para el vencimiento (`DATEDIFF`).
+    
+- Estado visual (`Pagado`, `Vencido`, `Por vencer`, `Vigente`).
+    
+- Orden automático por fecha de vencimiento y prioridad de cuenta.
+    
+
+---
+
+### 🔹 `getById(int $id)`
+
+Obtiene toda la información de una cuenta específica.
+
+**Parámetros:**
+
+- `$id` _(int)_ — ID único de la cuenta por cobrar.
+    
+
+**Incluye:**
+
+- Datos de venta, cliente, crédito y empleado.
+    
 - Pagos asociados (`getPaymentsByAccount`).
-- Total pagado acumulado.
+    
+- Total pagado acumulado automáticamente.
+    
 
 **Retorna:**  
-`array|null` — Datos de la cuenta o `null` si no existe.
+`array|null` — Datos completos de la cuenta o `null` si no existe.
 
 ---
 
-### 🔹 `getByClient($clienteCed)`
-Devuelve todas las cuentas por cobrar pertenecientes a un cliente específico.
+### 🔹 `getByClient(string $cedula)`
+
+Obtiene todas las cuentas por cobrar vinculadas a un cliente determinado.
 
 **Parámetros:**
-- `$clienteCed` *(string)* — Cédula o identificación del cliente.
+
+- `$cedula` _(string)_ — Cédula o identificación del cliente.
+    
 
 **Retorna:**  
-`array` — Listado de cuentas pendientes, vencidas o pagadas.
+`array` — Listado de cuentas (pendientes, vencidas o pagadas).
 
 ---
 
-### 🔹 `getPaymentsByAccount($cuentaId)`
-Obtiene todos los **pagos confirmados** asociados a una cuenta.
+### 🔹 `getPaymentsByAccount(int $id)`
+
+Devuelve todos los **pagos confirmados** asociados a una cuenta específica.
 
 **Parámetros:**
-- `$cuentaId` *(int)* — ID de la cuenta por cobrar.
+
+- `$id` _(int)_ — ID de la cuenta por cobrar.
+    
 
 **Retorna:**  
-`array` — Pagos confirmados ordenados por fecha.
+`array` — Lista de pagos confirmados ordenados por fecha (descendente).
 
 ---
 
-### 🔹 `registerPayment($data)`
-Registra un nuevo pago sobre una cuenta pendiente.
+### 🔹 `registerPayment(array $data)`
+
+Registra un **nuevo pago** sobre una cuenta pendiente y actualiza los saldos correspondientes.
 
 **Parámetros esperados:**
-- `cuenta_cobrar_id`
-- `monto`
-- `tipo_pago`
-- `referencia_bancaria`
-- `banco`
-- `observaciones`
+
+|Clave|Descripción|
+|---|---|
+|`cuenta_cobrar_id`|ID de la cuenta a la que se aplica el pago|
+|`monto`|Monto a registrar|
+|`tipo_pago`|Tipo de pago (ej. `EFECTIVO`, `TRANSFERENCIA`)|
+|`referencia_bancaria`|Código de referencia bancaria|
+|`banco`|Nombre del banco (opcional)|
+|`observaciones`|Comentarios o notas adicionales|
 
 **Proceso:**
-1. Valida existencia de la cuenta.
-2. Verifica que no esté pagada o vencida.
-3. Inserta el pago confirmado.
-4. Actualiza el saldo pendiente y estado de venta.
-5. Marca la cuenta como “pagada” si el saldo llega a 0.
 
-**Transacción SQL:** ✅ (usa `beginTransaction`, `commit`, `rollback`)
+1. Valida que la cuenta exista y no esté pagada o vencida.
+    
+2. Verifica que el monto sea válido y no supere el saldo pendiente.
+    
+3. Inserta el pago con estado `CONFIRMADO`.
+    
+4. Actualiza el saldo y el estado de la venta asociada.
+    
+5. Marca la cuenta como **pagada** si el saldo llega a cero.
+    
+
+**Transacción SQL:** ✅ Controlada mediante `beginTransaction`, `commit` y `rollBack`.
 
 **Retorna:**
+
 ```php
 [
   'success' => bool,
   'message' => string,
-  'pago_id' => int|null,
   'nuevo_saldo' => float|null
 ]
 ```
 
-### 🔹 updateDueDate($cuentaId, $nuevaFecha)
+---
 
-Actualiza la fecha de vencimiento de una cuenta.
+### 🔹 `updateDueDate(int $id, string $nuevaFecha)`
 
-**Reglas:**
+Actualiza la **fecha de vencimiento** de una cuenta.
 
-- La nueva fecha debe ser futura.
+**Parámetros:**
 
-- Solo permite actualizar cuentas pendientes o vencidas.
-
-**Efectos secundarios:**
-
-- Si estaba “vencida”, cambia su estado a “pendiente”.
-
-### 🔹 processExpiredAccounts()
-
-Procesa automáticamente las cuentas vencidas y actualiza estados globales.
-
-**Acciones:**
-
-1. Cambia el estado de las cuentas a vencido.
-
-2. Cancela ventas asociadas con estado pendiente.
-
-3. Libera prendas relacionadas (p.estado = 'DISPONIBLE').
-
-4. Devuelve cantidad total de cuentas afectadas.
-
-### 🔹 delete($cuentaId)
-
-Elimina (lógicamente) una cuenta por cobrar.
+- `$id` _(int)_ — ID de la cuenta por cobrar.
+    
+- `$nuevaFecha` _(string)_ — Nueva fecha en formato `YYYY-MM-DD`.
+    
 
 **Reglas:**
 
-- No puede eliminarse una cuenta pagada.
-
-- Marca la cuenta como eliminado.
-
-- Cancela la venta relacionada.
-
-- Libera los artículos vendidos.
+- La fecha debe ser **posterior a la actual**.
+    
+- Solo puede modificarse si la cuenta está `pendiente` o `vencida`.
+    
+- Si estaba vencida, su estado pasa automáticamente a `pendiente`.
+    
 
 **Retorna:**
+
 ```php
 [
   'success' => bool,
@@ -156,21 +168,54 @@ Elimina (lógicamente) una cuenta por cobrar.
 ]
 ```
 
-### 🔹 getStats()
+---
 
-Obtiene estadísticas generales del módulo de cuentas por cobrar.
+### 🔹 `processExpiredAccounts()`
+
+Ejecuta un proceso automatizado que **detecta y actualiza las cuentas vencidas**.
+
+**Acciones realizadas:**
+
+1. Marca como `vencido` todas las cuentas cuya fecha de vencimiento ha pasado.
+    
+2. Cancela las ventas asociadas con estado `pendiente`.
+    
+3. Libera las prendas asociadas a las ventas canceladas.
+    
+4. Devuelve la cantidad total de cuentas procesadas.
+    
+
+**Transacción SQL:** ✅
+
+**Retorna:**
+
+```php
+[
+  'success' => bool,
+  'message' => string,
+  'affected' => int
+]
+```
+
+---
+
+### 🔹 `getStats()`
+
+Obtiene estadísticas globales del módulo de cuentas por cobrar.
 
 **Datos devueltos:**
 
-- Total de cuentas
-
-- Cantidad pendientes, pagadas y vencidas
-
-- Saldo total pendiente
-
-- Monto por vencer (en los próximos 3 días)
+|Campo|Descripción|
+|---|---|
+|`total_cuentas`|Total general de cuentas registradas|
+|`pendientes`|Cantidad de cuentas pendientes|
+|`pagadas`|Cantidad de cuentas pagadas|
+|`vencidas`|Cantidad de cuentas vencidas|
+|`saldo_total`|Suma total de los saldos pendientes|
+|`por_vencer`|Monto total de cuentas que vencen en ≤ 3 días|
 
 **Ejemplo de retorno:**
+
 ```php
 [
   "total_cuentas" => 120,
@@ -182,35 +227,46 @@ Obtiene estadísticas generales del módulo de cuentas por cobrar.
 ]
 ```
 
-### 🧠 Consideraciones técnicas
+---
 
-- Todas las operaciones críticas están protegidas por transacciones.
+## 🧠 Consideraciones técnicas
 
-- Los estados posibles de una cuenta:
+- Todos los métodos críticos se ejecutan dentro de **transacciones atómicas**.
+    
+- Se implementaron métodos genéricos (`run()` y `execute()`) para reducir duplicación.
+    
+- El modelo aplica los estados lógicos:
+    
+    - `pendiente`
+        
+    - `pagado`
+        
+    - `vencido`
+        
+    - `eliminado`
+        
+- Los estados de **ventas** se sincronizan automáticamente con los de la cuenta.
+    
+- Compatible con **PHP 8.1+** y buenas prácticas de manejo de excepciones.
+    
 
-- `pendiente`
+---
 
-- `pagado`
+## 🔗 Relaciones con otros modelos
 
-- `vencido`
+|Relación|Tabla / Modelo|Descripción|
+|---|---|---|
+|`ventas`|`Sale`|Cada cuenta pertenece a una venta a crédito.|
+|`credito`|`Credit`|Relación directa entre cuenta y crédito.|
+|`clientes`|`Client`|Cliente deudor asociado a la cuenta.|
+|`pagos`|`Payment`|Historial de pagos confirmados.|
+|`prendas`|`Product`|Productos liberados si la cuenta vence o se cancela.|
 
-- `eliminado`
+---
 
-- Los estados de venta relacionados se sincronizan automáticamente.
+## 🧾 Ejemplo de uso
 
-### Relaciones con otros modelos
-
-| Relación	| Tabla / Modelo	| Descripción |
-| --- | --- | --- |
-| `ventas`	| `Sale`	| Cada cuenta pertenece a una venta a crédito.
-| `credito`	| `Credit`	| Relación directa entre cuenta y crédito.
-| `clientes`	| `Client`	| Cliente deudor asociado.
-| `pagos`	| `Payment`	| Historial de pagos confirmados.
-| `prendas`	| `Product`	| Productos vendidos que pueden liberarse si la cuenta se elimina o vence.
-
-### 🧾 Ejemplo de uso
-
-```php 
+```php
 use Barkios\models\AccountsReceivable;
 
 $cuentas = new AccountsReceivable();
@@ -218,12 +274,19 @@ $cuentas = new AccountsReceivable();
 // Listar todas las cuentas activas
 $listado = $cuentas->getAll();
 
-// Registrar un pago
-$pago = $cuentas->registerPayment([
+// Consultar una cuenta específica
+$detalle = $cuentas->getById(10);
+
+// Registrar un nuevo pago
+$resultado = $cuentas->registerPayment([
     'cuenta_cobrar_id' => 12,
     'monto' => 150.00,
     'tipo_pago' => 'TRANSFERENCIA',
     'banco' => 'Banco Nacional',
-    'referencia_bancaria' => 'TRX12345'
+    'referencia_bancaria' => 'TRX12345',
+    'observaciones' => 'Pago parcial'
 ]);
+
+// Actualizar fecha de vencimiento
+$cuentas->updateDueDate(12, '2025-12-01');
 ```
